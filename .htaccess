@@ -1,10 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Direct access to test scripts
-    RewriteCond %{REQUEST_URI} ^/(api_sample\.php|laravel_check\.php) [NC]
-    RewriteRule ^ - [L]
-
     # Route /api/ requests to the Laravel Backend
     RewriteCond %{REQUEST_URI} ^/api/ [NC]
     RewriteRule ^api/(.*)$ backend/public/index.php [L,QSA]
