@@ -1,8 +1,8 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Allow direct access to test scripts
-    RewriteCond %{REQUEST_URI} ^/db_test\.php [NC]
+    # Direct access to api_sample.php
+    RewriteCond %{REQUEST_URI} ^/api_sample\.php [NC]
     RewriteRule ^ - [L]
 
     # Route /api/ requests to the Laravel Backend
