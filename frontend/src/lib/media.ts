@@ -5,13 +5,14 @@ export function resolveAvatarUrl(avatarUrl?: any): string | undefined {
   const currentHost = window.location.hostname;
   const currentProtocol = window.location.protocol;
 
-  // If it's a relative path like /storage/avatars/xxx or storage/avatars/xxx
   if (avatarUrl.startsWith('/storage/') || avatarUrl.startsWith('storage/')) {
     const cleanPath = avatarUrl.startsWith('/') ? avatarUrl : `/${avatarUrl}`;
-    return `${currentProtocol}//${currentHost}/snad/backend/public${cleanPath}`;
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1' || currentHost.startsWith('192.168.') || currentHost.startsWith('10.')) {
+      return `${currentProtocol}//${currentHost}/snad/backend/public${cleanPath}`;
+    }
+    return cleanPath;
   }
 
-  // If it's a full URL containing localhost or 127.0.0.1, replace host with current browsing host
   if (avatarUrl.includes('localhost') || avatarUrl.includes('127.0.0.1')) {
     return avatarUrl.replace(/localhost|127\.0\.0\.1/g, currentHost);
   }
@@ -29,12 +30,21 @@ export function resolveMealImageUrl(imageUrl?: any): string | undefined {
 
   if (imageUrl.startsWith('/images/') || imageUrl.startsWith('images/')) {
     const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-    return `${currentProtocol}//${currentHost}${currentPort}${cleanPath}`;
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1' || currentHost.startsWith('192.168.') || currentHost.startsWith('10.')) {
+      if (typeof window !== 'undefined' && window.location.pathname.startsWith('/snad')) {
+        return `${currentProtocol}//${currentHost}/snad${cleanPath}`;
+      }
+      return `${currentProtocol}//${currentHost}${currentPort}${cleanPath}`;
+    }
+    return cleanPath;
   }
 
-  if (imageUrl.startsWith('/uploads/') || imageUrl.startsWith('uploads/')) {
+  if (imageUrl.startsWith('/uploads/') || imageUrl.startsWith('uploads/') || imageUrl.startsWith('/storage/') || imageUrl.startsWith('storage/')) {
     const cleanPath = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
-    return `${currentProtocol}//${currentHost}/snad/backend/public${cleanPath}`;
+    if (currentHost === 'localhost' || currentHost === '127.0.0.1' || currentHost.startsWith('192.168.') || currentHost.startsWith('10.')) {
+      return `${currentProtocol}//${currentHost}/snad/backend/public${cleanPath}`;
+    }
+    return cleanPath;
   }
 
   if (imageUrl.includes('localhost') || imageUrl.includes('127.0.0.1')) {
