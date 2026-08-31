@@ -26,7 +26,7 @@ if [ -f backend/.env ]; then
     mv backend/.env backend/.env.local_backup
 fi
 if [ -f backend/.env.host ]; then
-    mv backend/.env.host backend/.env
+    cp backend/.env.host backend/.env
 fi
 
 # 4. Stage changes
@@ -54,7 +54,7 @@ git push origin HEAD
 echo ""
 echo "🔄 Restoring local .env files..."
 if [ -f backend/.env ]; then
-    mv backend/.env backend/.env.host
+    rm -f backend/.env
 fi
 if [ -f backend/.env.local_backup ]; then
     mv backend/.env.local_backup backend/.env
