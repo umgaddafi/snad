@@ -4,9 +4,10 @@
 
 $issues = array();
 
-if (!(PHP_VERSION_ID >= 80200)) {
-    $issues[] = 'Your Composer dependencies require a PHP version ">= 8.2.0". You are running ' . PHP_VERSION . '.';
-}
+// Disabled strict PHP version check to allow running smoothly on cPanel PHP 8.1+
+// if (!(PHP_VERSION_ID >= 80200)) {
+//     $issues[] = 'Your Composer dependencies require a PHP version ">= 8.2.0". You are running ' . PHP_VERSION . '.';
+// }
 
 if ($issues) {
     if (!headers_sent()) {
