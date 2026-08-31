@@ -1,13 +1,20 @@
 import axios from 'axios';
 
-// Dynamically resolve the API host from the browser's current location.
-// This means whether the app is accessed via localhost OR a network IP (e.g. 192.168.x.x),
-// the API calls always point to the same machine that served the page.
-const API_HOST = window.location.hostname;
-const BASE_URL = `http://${API_HOST}/snad/backend/public/api/v1`;
+// Dynamically resolve the API host and base URL.
+// In local subpath (/snad), point to local backend API.
+// In production domain root (e.g. snadkitchen.kisprojectslab.com), point to relative /api/v1 matching .htaccess rewrite rules.
+const getBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL;
+  }
+  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/snad')) {
+    return `http://${window.location.hostname}/snad/backend/public/api/v1`;
+  }
+  return '/api/v1';
+};
 
 const api = axios.create({
-  baseURL: BASE_URL,
+  baseURL: getBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json',
