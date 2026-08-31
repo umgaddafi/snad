@@ -4,25 +4,17 @@ ini_set('display_errors', 1);
 
 header('Content-Type: text/plain');
 
-echo "=== LARAVEL BOOT DIAGNOSTIC (ROOT) ===\n";
+echo "=== LARAVEL FULL REQUEST DIAGNOSTIC ===\n";
 
 try {
-    echo "1. Loading vendor/autoload.php...\n";
     require __DIR__ . '/backend/vendor/autoload.php';
-    echo "   Autoload success!\n";
-
-    echo "2. Bootstrapping app.php...\n";
     $app = require_once __DIR__ . '/backend/bootstrap/app.php';
-    echo "   Bootstrap success!\n";
 
-    echo "3. Testing DB facade connection...\n";
-    $pdo = \Illuminate\Support\Facades\DB::connection()->getPdo();
-    echo "   DB Facade Connection SUCCESS! Driver: " . $pdo->getAttribute(PDO::ATTR_DRIVER_NAME) . "\n";
+    $request = Illuminate\Http\Request::create('/api/v1/categories', 'GET');
+    $response = $app->handleRequest($request);
 
-    echo "4. Testing Food Model...\n";
-    $count = \App\Models\Food::count();
-    echo "   Food model count: " . $count . "\n";
-
+    echo "Status Code: " . $response->getStatusCode() . "\n";
+    echo "Content:\n" . $response->getContent() . "\n";
 } catch (\Throwable $e) {
     echo "\nFATAL EXCEPTION THROWN:\n";
     echo "Message: " . $e->getMessage() . "\n";
