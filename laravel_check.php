@@ -4,17 +4,20 @@ ini_set('display_errors', 1);
 
 header('Content-Type: text/plain');
 
-echo "=== LARAVEL FULL REQUEST DIAGNOSTIC ===\n";
+echo "=== TESTING LARAVEL HANDLE REQUEST ===\n";
 
 try {
     require __DIR__ . '/backend/vendor/autoload.php';
     $app = require_once __DIR__ . '/backend/bootstrap/app.php';
 
-    $request = Illuminate\Http\Request::create('/api/v1/categories', 'GET');
-    $response = $app->handleRequest($request);
+    echo "App bootstrapped! Handling capture...\n";
+    $request = Illuminate\Http\Request::capture();
+    echo "Request captured: " . $request->fullUrl() . "\n";
 
-    echo "Status Code: " . $response->getStatusCode() . "\n";
+    $response = $app->handleRequest($request);
+    echo "Status: " . $response->getStatusCode() . "\n";
     echo "Content:\n" . $response->getContent() . "\n";
+
 } catch (\Throwable $e) {
     echo "\nFATAL EXCEPTION THROWN:\n";
     echo "Message: " . $e->getMessage() . "\n";
