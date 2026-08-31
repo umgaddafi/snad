@@ -32,9 +32,12 @@ fi
 # 4. Stage changes
 echo ""
 echo "📝 Staging changes for git..."
-# Force add backend/.env in case it's in .gitignore
+# Force add backend/.env and backend/vendor
 if [ -f backend/.env ]; then
     git add -f backend/.env
+fi
+if [ -d backend/vendor ]; then
+    git add -f backend/vendor
 fi
 git add index.html assets/ images/ favicon.svg icons.svg logo.png .htaccess || true
 git add .
@@ -43,7 +46,7 @@ git add .
 echo ""
 echo "💾 Committing changes..."
 # We use || true so the script doesn't fail if there's nothing to commit
-git commit -m "Deploy to cPanel - $(date +'%Y-%m-%d %H:%M:%S')" || true
+git commit -m "Deploy to cPanel with vendor dependencies - $(date +'%Y-%m-%d %H:%M:%S')" || true
 
 # 6. Push to GitHub
 echo ""
