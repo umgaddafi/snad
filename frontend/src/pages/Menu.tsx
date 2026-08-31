@@ -23,7 +23,9 @@ interface Category {
 
 const fetchFoods = async () => {
   const response = await api.get('/foods');
-  return response.data.data;
+  if (Array.isArray(response.data)) return response.data;
+  if (Array.isArray(response.data?.data)) return response.data.data;
+  return [];
 };
 
 export default function Menu() {
@@ -73,19 +75,21 @@ export default function Menu() {
     queryKey: ['menuCategories'],
     queryFn: async () => {
       const res = await api.get('/categories');
-      return res.data as Category[];
+      if (Array.isArray(res.data)) return res.data as Category[];
+      if (Array.isArray(res.data?.data)) return res.data.data as Category[];
+      return [];
     },
   });
 
-  const categoryNames = ['All', ...(categories?.map((c) => c.name) || [])];
+  const categoryNames = ['All', ...(Array.isArray(categories) ? categories.map((c) => c.name) : [])];
 
-  let filteredFoods = foods?.filter((food: Food) => {
+  let filteredFoods = (Array.isArray(foods) ? foods : []).filter((food: Food) => {
     const matchesSearch = food.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           food.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === 'All' || food.category.name === activeCategory;
+    const matchesCategory = activeCategory === 'All' || food.category?.name === activeCategory;
     const matchesFav = !onlyFavorites || favorites.includes(food.id);
     return matchesSearch && matchesCategory && matchesFav;
-  }) || [];
+  });
 
   if (sortBy === 'price-low') {
     filteredFoods = [...filteredFoods].sort((a, b) => a.price - b.price);
