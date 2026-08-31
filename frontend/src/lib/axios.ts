@@ -1,14 +1,17 @@
 import axios from 'axios';
 
 // Dynamically resolve the API host and base URL.
-// In local subpath (/snad), point to local backend API.
-// In production domain root (e.g. snadkitchen.kisprojectslab.com), point to relative /api/v1 matching .htaccess rewrite rules.
+// On local dev (localhost, 127.0.0.1, LAN IP), point to Apache port 80 (/snad/backend/public/api/v1).
+// On production domain (e.g. snadkitchen.kisprojectslab.com), point to relative /api/v1.
 const getBaseUrl = () => {
   if (import.meta.env.VITE_API_BASE_URL) {
     return import.meta.env.VITE_API_BASE_URL;
   }
-  if (typeof window !== 'undefined' && window.location.pathname.startsWith('/snad')) {
-    return `http://${window.location.hostname}/snad/backend/public/api/v1`;
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1' || host.startsWith('192.168.') || host.startsWith('10.')) {
+      return `http://${host}/snad/backend/public/api/v1`;
+    }
   }
   return '/api/v1';
 };
