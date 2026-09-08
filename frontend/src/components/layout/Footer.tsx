@@ -28,7 +28,7 @@ export default function Footer() {
         <div>
           <img src="/logo.png" alt="Snad Kitchen" className="h-16 md:h-24 w-auto mb-4 object-contain" />
           <p className="text-gray-400">Serving the best meals at Joseph Sarwuan Tarka University, Makurdi.</p>
-          
+
           <div className="flex space-x-4 mt-6">
             <a href={settings?.facebook_url || '#'} target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-orange-500 transition">
               <FacebookIcon />
@@ -58,12 +58,12 @@ export default function Footer() {
         </div>
         <div>
           <h4 className="font-bold mb-4">Contact</h4>
-          <p className="text-gray-400">Student Center, JOSTUM Campus</p>
+           <p className="text-gray-400">Opposite IPESS, JOSTUM Campus</p>
           <p className="text-gray-400">support@snadkitchen.com</p>
         </div>
       </div>
       <div className="mt-12 text-center text-gray-500 border-t border-gray-800 pt-8">
-        <p>&copy; {new Date().getFullYear()} Snad Kitchen. All rights reserved.</p>
+        <p>&copy; {new Date().getFullYear()} Snad Kitchen. All rights reserved.</p> <span className="text-orange-500"> <a className="text-orange-500" href="http://kisprojectslab.com" target="_blank" rel="noopener noreferrer">Developed by Kendat Tech</a></span>
       </div>
     </footer>
   );
