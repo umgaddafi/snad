@@ -98,6 +98,9 @@ export default function Login() {
                 {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
+            <div className="mt-2 text-right">
+              <Link to="/forgot-password" className="text-sm text-orange-600 font-bold hover:underline">Forgot Password?</Link>
+            </div>
           </div>
 
           <button 
@@ -108,10 +111,6 @@ export default function Login() {
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign In'}
           </button>
         </form>
-
-        <div className="mt-4 text-right">
-          <Link to="/forgot-password" className="text-sm text-orange-600 font-bold hover:underline">Forgot Password?</Link>
-        </div>
 
         <div className="mt-6 text-center text-sm text-gray-500">
           Don't have an account? <Link to="/register" className="text-orange-600 font-bold hover:underline">Register</Link>

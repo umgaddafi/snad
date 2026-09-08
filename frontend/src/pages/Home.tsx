@@ -3,7 +3,7 @@ import { ArrowRight, Star, Clock, Truck, ShoppingBag, ChevronDown, Plus, Utensil
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
-import { useCartStore } from '@/store/useCartStore';
+import FoodCustomizerModal from '@/components/FoodCustomizerModal';
 import api from '@/lib/axios';
 
 import { resolveMealImageUrl } from '@/lib/media';
@@ -33,7 +33,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 }
 
 export default function Home() {
-  const addItem = useCartStore(state => state.addItem);
+  const [selectedFoodForCustomization, setSelectedFoodForCustomization] = useState<Food | null>(null);
 
   const { data: foods } = useQuery({
     queryKey: ['popularFoods'],
@@ -48,17 +48,17 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative bg-white overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-orange-50 to-red-50 opacity-50"></div>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12 pb-16 relative z-10 flex flex-col md:flex-row items-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative z-10 flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 md:pr-12">
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-              <span className="inline-block py-1 px-3 rounded-full bg-orange-100 text-orange-600 font-semibold text-sm mb-4">
+              <span className="inline-block py-1 px-3 rounded-full bg-orange-100 text-orange-600 font-semibold text-sm mb-3">
                 🚀 JOSTUM's #1 Food Delivery
               </span>
-              <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight mb-6">
-                Qaulity meals, <br />
+              <h1 className="text-5xl md:text-7xl font-extrabold text-gray-900 leading-tight mb-4">
+                Delicious meals, <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-red-600">delivered fast.</span>
               </h1>
-              <p className="text-lg text-gray-600 mb-8 max-w-lg">
+              <p className="text-lg text-gray-600 mb-5 max-w-lg">
                 Experience the best restaurant quality food right here on campus. Freshly prepared, securely packaged, and delivered to your hostel or office.
               </p>
               <div className="flex items-center space-x-4">
@@ -73,7 +73,7 @@ export default function Home() {
             </motion.div>
           </div>
           
-          <div className="md:w-1/2 mt-16 md:mt-0 relative">
+          <div className="md:w-1/2 mt-8 md:mt-0 relative">
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.7 }}>
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <img 
@@ -100,7 +100,7 @@ export default function Home() {
       </section>
 
       {/* How It Works */}
-      <section className="bg-white py-14 border-t border-gray-100">
+      <section className="bg-white pt-8 pb-14 border-t border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-extrabold text-gray-900 mb-3">How It Works</h2>
@@ -108,19 +108,31 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
-              { step: '1', icon: Utensils, title: 'Browse Menu', desc: 'Explore our wide variety of premium meals, drinks, and combos prepared fresh daily.' },
+              { step: '1', icon: Utensils, title: 'Browse Menu', href: '/menu', desc: 'Explore our wide variety of premium meals, drinks, and combos prepared fresh daily.' },
               { step: '2', icon: ShoppingBag, title: 'Place Order & Pay', desc: 'Add items to cart, choose delivery or pickup, and pay securely via Paystack or Cash.' },
               { step: '3', icon: CheckCircle2, title: 'Get Delivered', desc: 'Track your order in real-time. Our rider brings your food hot and fresh to your door.' },
-            ].map((item, idx) => (
-              <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.15 }} className="text-center relative">
-                <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
-                  <item.icon className="w-8 h-8" />
-                </div>
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 bg-orange-100 text-orange-600 text-xs font-extrabold w-6 h-6 rounded-full flex items-center justify-center">{item.step}</span>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">{item.title}</h3>
-                <p className="text-gray-500 text-sm max-w-xs mx-auto">{item.desc}</p>
-              </motion.div>
-            ))}
+            ].map((item, idx) => {
+              const stepContent = (
+                <>
+                  <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-red-600 text-white rounded-2xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+                    <item.icon className="w-8 h-8" />
+                  </div>
+                  <span className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-2 bg-orange-100 text-orange-600 text-xs font-extrabold w-6 h-6 rounded-full flex items-center justify-center">{item.step}</span>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 group-hover:underline transition-colors">{item.title}</h3>
+                </>
+              );
+
+              return (
+                <motion.div key={idx} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.15 }} className="text-center relative">
+                  {item.href ? (
+                    <Link to={item.href} className="group block relative rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2">
+                      {stepContent}
+                    </Link>
+                  ) : stepContent}
+                  <p className="text-gray-500 text-sm max-w-xs mx-auto">{item.desc}</p>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -161,13 +173,15 @@ export default function Home() {
                     <h3 className="text-lg font-bold text-gray-900 mb-1 leading-tight">{food.name}</h3>
                     <p className="text-sm text-gray-500 line-clamp-2">{food.description}</p>
                   </div>
-                  <div className="mt-4 flex items-center justify-between border-t border-gray-100 pt-4">
+                  <div className="mt-4 flex items-center justify-between gap-2 border-t border-gray-100 pt-4">
                     <span className="text-xl font-bold text-gray-900">₦{food.price.toLocaleString()}</span>
                     <button
-                      onClick={() => addItem({ food_id: food.id, name: food.name, price: food.price, quantity: 1 })}
-                      className="bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white p-3 rounded-full transition"
+                      type="button"
+                      onClick={() => setSelectedFoodForCustomization(food)}
+                      className="bg-orange-50 text-orange-600 hover:bg-orange-500 hover:text-white px-3.5 py-2 rounded-full font-bold text-xs transition flex items-center gap-1 shrink-0"
                     >
-                      <Plus className="w-5 h-5" />
+                      <Plus className="w-4 h-4" />
+                      Customize
                     </button>
                   </div>
                 </motion.div>
@@ -347,6 +361,13 @@ export default function Home() {
           </div>
         </div>
       </section>
+      {selectedFoodForCustomization && (
+        <FoodCustomizerModal
+          food={selectedFoodForCustomization}
+          isOpen={true}
+          onClose={() => setSelectedFoodForCustomization(null)}
+        />
+      )}
     </div>
   );
 }

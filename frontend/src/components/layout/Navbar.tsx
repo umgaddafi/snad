@@ -72,7 +72,7 @@ export default function Navbar() {
         <div className="bg-gradient-to-r from-orange-600 via-amber-500 to-red-600 text-white text-xs font-extrabold py-2 shadow-md flex items-center relative z-50 overflow-hidden">
           <div className="bg-orange-800/90 px-3 py-1 z-10 flex items-center gap-1.5 shrink-0 shadow-lg font-black uppercase tracking-wider text-[10px]">
             <Megaphone className="w-3.5 h-3.5 animate-pulse text-yellow-300" />
-            <span>Campus Notice</span>
+            <span>Announcement</span>
           </div>
           <div className="flex-1 overflow-hidden relative flex items-center">
             <div className="animate-marquee-rtl font-black text-sm tracking-wide text-white drop-shadow-sm">
