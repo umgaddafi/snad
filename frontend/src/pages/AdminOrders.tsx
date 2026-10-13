@@ -16,11 +16,14 @@ import {
   Clock,
   DollarSign,
   CheckCircle2,
+  Printer,
+  ChefHat,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/axios';
 import { playFemaleVoiceNotification } from '@/lib/sound';
 import Pagination from '@/components/common/Pagination';
+import ThermalReceiptModal from '@/components/ThermalReceiptModal';
 
 interface OrderItem {
   id: number;
@@ -42,7 +45,11 @@ interface Order {
   id: number;
   order_number: string;
   user: { name: string; email: string; phone: string | null };
+  customer_name?: string | null;
+  customer_phone?: string | null;
+  table_number?: string | null;
   delivery_type?: string;
+  order_source?: string;
   subtotal?: string;
   discount_amount?: string;
   coupon_code?: string | null;
@@ -69,6 +76,8 @@ export default function AdminOrders() {
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [receiptOrder, setReceiptOrder] = useState<Order | null>(null);
+  const [receiptMode, setReceiptMode] = useState<'kitchen' | 'customer'>('customer');
 
   const { data: orders, isLoading } = useQuery({
     queryKey: ['adminOrders'],
@@ -226,8 +235,31 @@ export default function AdminOrders() {
                 <tr key={order.id} className="hover:bg-gray-50/70 transition">
                   <td className="px-6 py-4 font-black text-gray-900">{order.order_number}</td>
                   <td className="px-6 py-4 text-gray-900">
-                    <div className="font-bold">{order.user?.name || 'Guest'}</div>
-                    <div className="text-xs text-gray-400 font-normal">{order.user?.phone || 'No phone'}</div>
+                    <div className="font-bold flex items-center gap-1.5 flex-wrap">
+                      <span>{order.customer_name || order.user?.name || 'Guest'}</span>
+                      {order.order_source === 'pos' || order.table_number || order.delivery_type === 'dine_in' ? (
+                        <span className="text-[10px] bg-amber-50 text-amber-700 font-extrabold px-1.5 py-0.5 rounded-md border border-amber-200">
+                          🏪 Front Desk
+                        </span>
+                      ) : (
+                        <span className="text-[10px] bg-blue-50 text-blue-700 font-extrabold px-1.5 py-0.5 rounded-md border border-blue-200">
+                          🌐 Online
+                        </span>
+                      )}
+                      {order.delivery_type === 'dine_in' && (
+                        <span className="text-[10px] bg-purple-50 text-purple-700 font-extrabold px-1.5 py-0.5 rounded-md border border-purple-200">
+                          Table #{order.table_number || '?'}
+                        </span>
+                      )}
+                      {order.delivery_type === 'pickup' && (
+                        <span className="text-[10px] bg-blue-50 text-blue-700 font-extrabold px-1.5 py-0.5 rounded-md border border-blue-200">
+                          Pickup
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-xs text-gray-400 font-normal">
+                      {order.customer_phone || order.user?.phone || 'No phone'}
+                    </div>
                   </td>
                   <td className="px-6 py-4 text-gray-600 text-xs max-w-xs truncate">
                     {order.items?.map((i) => `${i.quantity}x ${i.food?.name}`).join(', ')}
@@ -311,16 +343,29 @@ export default function AdminOrders() {
                     </div>
                   </td>
 
-                  {/* Action: View Order Details */}
+                  {/* Actions: Print Thermal Receipt & View Order Details */}
                   <td className="px-6 py-4 text-right">
-                    <button
-                      onClick={() => setSelectedOrder(order)}
-                      className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 font-bold text-xs transition"
-                      title="View Full Order Details"
-                    >
-                      <Eye className="w-4 h-4" />
-                      <span>Details</span>
-                    </button>
+                    <div className="inline-flex items-center space-x-2">
+                      <button
+                        onClick={() => {
+                          setReceiptOrder(order);
+                          setReceiptMode('customer');
+                        }}
+                        className="inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 font-bold text-xs transition"
+                        title="Print Thermal POS Receipt"
+                      >
+                        <Printer className="w-3.5 h-3.5 text-gray-600" />
+                        <span className="hidden sm:inline">Print</span>
+                      </button>
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-xl bg-orange-50 text-orange-600 hover:bg-orange-100 font-bold text-xs transition"
+                        title="View Full Order Details"
+                      >
+                        <Eye className="w-4 h-4" />
+                        <span>Details</span>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -418,14 +463,23 @@ export default function AdminOrders() {
                     <UserIcon className="w-4 h-4 text-orange-500" /> Customer Info
                   </h4>
                   <div>
-                    <p className="font-bold text-gray-900">{selectedOrder.user?.name || 'Guest User'}</p>
-                    <p className="text-xs text-gray-500">{selectedOrder.user?.email}</p>
-                    {selectedOrder.user?.phone ? (
+                    <p className="font-bold text-gray-900 flex items-center gap-2 flex-wrap">
+                      <span>{selectedOrder.customer_name || selectedOrder.user?.name || 'Guest User'}</span>
+                      {selectedOrder.customer_name && (
+                        <span className="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full">
+                          Walk-in Customer
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {selectedOrder.customer_name ? `Taken by Staff: ${selectedOrder.user?.name}` : selectedOrder.user?.email}
+                    </p>
+                    {(selectedOrder.customer_phone || selectedOrder.user?.phone) ? (
                       <a
-                        href={`tel:${selectedOrder.user.phone}`}
+                        href={`tel:${selectedOrder.customer_phone || selectedOrder.user?.phone}`}
                         className="text-xs font-bold text-orange-600 hover:underline inline-flex items-center gap-1 mt-1"
                       >
-                        <Phone className="w-3 h-3" /> {selectedOrder.user.phone}
+                        <Phone className="w-3 h-3" /> {selectedOrder.customer_phone || selectedOrder.user?.phone}
                       </a>
                     ) : (
                       <p className="text-xs text-gray-400 italic">No phone number registered</p>
@@ -436,11 +490,15 @@ export default function AdminOrders() {
                 {/* Delivery Spot Box */}
                 <div className="bg-gray-50/70 p-4 rounded-2xl border border-gray-100 space-y-2">
                   <h4 className="font-extrabold text-gray-900 text-xs uppercase tracking-wider flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-orange-500" /> Delivery Details
+                    <MapPin className="w-4 h-4 text-orange-500" /> Order & Delivery Type
                   </h4>
                   <div>
                     <p className="font-bold text-gray-900 capitalize">
-                      {selectedOrder.delivery_type === 'pickup' ? '🏪 Self Pickup at Counter' : '🚴 Campus Delivery'}
+                      {selectedOrder.delivery_type === 'dine_in'
+                        ? `🍽️ Dine-In (Table #${selectedOrder.table_number || 'N/A'})`
+                        : selectedOrder.delivery_type === 'pickup'
+                        ? '🏪 Self Pickup at Counter'
+                        : '🚴 Campus Delivery'}
                     </p>
                     {selectedOrder.special_instructions && (
                       <div className="mt-1.5 p-2 bg-white rounded-xl border border-gray-200 text-xs text-gray-700">
@@ -650,10 +708,35 @@ export default function AdminOrders() {
             </div>
 
             {/* Modal Footer */}
-            <div className="p-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+            <div className="p-4 bg-gray-50 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setReceiptOrder(selectedOrder);
+                    setReceiptMode('customer');
+                  }}
+                  className="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs shadow-md shadow-orange-500/20 transition active:scale-95"
+                  title="Print Customer Sales Receipt"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print Receipt</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setReceiptOrder(selectedOrder);
+                    setReceiptMode('kitchen');
+                  }}
+                  className="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-800 font-bold text-xs transition"
+                  title="Print Kitchen Order Ticket (KOT)"
+                >
+                  <ChefHat className="w-3.5 h-3.5 text-neutral-600" />
+                  <span>Kitchen Slip (KOT)</span>
+                </button>
+              </div>
+
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-6 py-2.5 rounded-2xl text-sm transition"
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold px-5 py-2 rounded-xl text-xs transition"
               >
                 Close Inspection
               </button>
@@ -661,6 +744,14 @@ export default function AdminOrders() {
           </div>
         </div>
       )}
+
+      {/* Thermal POS Receipt Modal */}
+      <ThermalReceiptModal
+        order={receiptOrder}
+        isOpen={!!receiptOrder}
+        onClose={() => setReceiptOrder(null)}
+        initialMode={receiptMode}
+      />
     </div>
   );
 }

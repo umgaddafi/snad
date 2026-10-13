@@ -35,6 +35,13 @@ class DatabaseSeeder extends Seeder
             'email_verified_at' => now(),
         ]);
         User::create([
+            'name' => 'Front Desk Officer',
+            'email' => 'frontdesk@snadkitchen.com',
+            'password' => Hash::make('password123'),
+            'role' => 'front_desk',
+            'email_verified_at' => now(),
+        ]);
+        User::create([
             'name' => 'Sarah Student',
             'email' => 'sarah@jostum.edu.ng',
             'password' => Hash::make('password'),

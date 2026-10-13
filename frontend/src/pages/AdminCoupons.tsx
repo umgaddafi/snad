@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Tag, Plus, Trash2, CheckCircle2, XCircle, Loader2, Sparkles } from 'lucide-react';
 import api from '@/lib/axios';
 import toast from 'react-hot-toast';
+import Pagination from '@/components/common/Pagination';
 
 interface Coupon {
   id: number;
@@ -25,6 +26,9 @@ export default function AdminCoupons() {
   const [minSpend, setMinSpend] = useState<number>(1000);
   const [expiresAt, setExpiresAt] = useState('');
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
+
   const { data: coupons, isLoading } = useQuery({
     queryKey: ['adminCoupons'],
     queryFn: async () => {
@@ -32,6 +36,9 @@ export default function AdminCoupons() {
       return res.data as Coupon[];
     },
   });
+
+  const totalPages = Math.ceil((coupons?.length || 0) / ITEMS_PER_PAGE) || 1;
+  const paginatedCoupons = coupons?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE) || [];
 
   const createMutation = useMutation({
     mutationFn: async (payload: any) => {
@@ -127,7 +134,7 @@ export default function AdminCoupons() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 font-medium text-gray-800">
-                {coupons?.map((c) => (
+                {paginatedCoupons.map((c) => (
                   <tr key={c.id} className="hover:bg-gray-50/50 transition">
                     <td className="p-4 pl-6">
                       <div className="flex items-center gap-2">
@@ -164,9 +171,23 @@ export default function AdminCoupons() {
                     </td>
                   </tr>
                 ))}
+                {coupons?.length === 0 && !isLoading && (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-gray-400 font-medium">
+                      No promo coupons created yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+            totalItems={coupons?.length || 0}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
         </div>
       )}
 

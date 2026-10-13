@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Clock, CheckCircle, Loader2, CreditCard, DollarSign, Printer, Volume2, VolumeX } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
+import ThermalReceiptModal from '@/components/ThermalReceiptModal';
 
 interface OrderItem {
   id: number;
@@ -17,6 +18,9 @@ interface Order {
   order_number: string;
   status: string;
   delivery_type?: string;
+  table_number?: string | null;
+  customer_name?: string | null;
+  customer_phone?: string | null;
   payment_method?: string;
   total_amount?: string | number;
   created_at: string;
@@ -109,9 +113,6 @@ export default function KitchenDashboard() {
 
   const handlePrintTicket = (order: Order) => {
     setPrintingOrder(order);
-    setTimeout(() => {
-      window.print();
-    }, 300);
   };
 
   if (isLoading) {
@@ -189,10 +190,26 @@ export default function KitchenDashboard() {
                               <Printer className="w-4 h-4" />
                             </button>
                           </div>
-                          <div className="flex items-center gap-1.5 mt-1">
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                            {order.delivery_type === 'dine_in' && (
+                              <span className="bg-purple-100 text-purple-800 text-[10px] font-black px-2 py-0.5 rounded-md border border-purple-200">
+                                🍽️ Dine-In #{order.table_number || '?'}
+                              </span>
+                            )}
+                            {order.delivery_type === 'pickup' && (
+                              <span className="bg-blue-100 text-blue-800 text-[10px] font-black px-2 py-0.5 rounded-md border border-blue-200">
+                                🛍️ Self-Pickup
+                              </span>
+                            )}
+                            {order.delivery_type === 'delivery' && (
+                              <span className="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-md border border-amber-200">
+                                🚴 Delivery
+                              </span>
+                            )}
+
                             {order.status === 'confirmed' ? (
                               <span className="bg-green-100 text-green-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1">
-                                <CreditCard className="w-3 h-3" /> Paid (Paystack)
+                                <CreditCard className="w-3 h-3" /> Paid
                               </span>
                             ) : (
                               <span className="bg-yellow-100 text-yellow-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md flex items-center gap-1">
@@ -200,6 +217,11 @@ export default function KitchenDashboard() {
                               </span>
                             )}
                           </div>
+                          {(order.customer_name || order.user?.name) && (
+                            <p className="text-[11px] text-gray-500 font-semibold mt-1">
+                              👤 {order.customer_name || order.user?.name}
+                            </p>
+                          )}
                         </div>
 
                         <span className="flex items-center text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded-md">
@@ -244,7 +266,15 @@ export default function KitchenDashboard() {
                       )}
                       {col.id === 'ready' && (
                         <div className="space-y-2">
-                          {order.delivery_type === 'pickup' ? (
+                          {order.delivery_type === 'dine_in' ? (
+                            <button
+                              onClick={() => moveOrder(order.id, 'delivered')}
+                              className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center space-x-2 text-sm shadow-md"
+                            >
+                              <CheckCircle className="w-4 h-4" />
+                              <span>Served to Table #{order.table_number || ''} 🍽️</span>
+                            </button>
+                          ) : order.delivery_type === 'pickup' ? (
                             <button
                               onClick={() => moveOrder(order.id, 'delivered')}
                               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center space-x-2 text-sm shadow-md"
@@ -279,70 +309,13 @@ export default function KitchenDashboard() {
         })}
       </div>
 
-      {/* Thermal POS Receipt Modal for Printing */}
-      {printingOrder && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 print:p-0 print:bg-white print:static">
-          <div className="bg-white rounded-3xl p-6 w-full max-w-xs shadow-2xl border border-gray-200 font-mono text-xs space-y-4 print:shadow-none print:border-none print:w-full">
-            <div className="text-center border-b border-dashed border-gray-300 pb-3">
-              <h2 className="font-black text-base text-gray-900">SNAD KITCHEN</h2>
-              <p className="text-[10px] text-gray-600">JOSTUM Campus, Makurdi</p>
-              <p className="text-[10px] text-gray-600">Order: #{printingOrder.order_number}</p>
-              <p className="text-[10px] text-gray-500">{new Date(printingOrder.created_at).toLocaleString()}</p>
-            </div>
-
-            {printingOrder.user && (
-              <div className="border-b border-dashed border-gray-300 pb-2">
-                <p className="font-bold text-gray-900">Customer: {printingOrder.user.name}</p>
-                <p className="text-gray-600">Phone: {printingOrder.user.phone || 'N/A'}</p>
-              </div>
-            )}
-
-            <div className="border-b border-dashed border-gray-300 pb-3 space-y-2">
-              <p className="font-bold text-gray-900 uppercase">KITCHEN TICKET ITEMS:</p>
-              {printingOrder.items?.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-start">
-                  <div>
-                    <span className="font-black text-gray-900">{item.quantity}x</span> {item.food?.name}
-                    {item.customizations && item.customizations.length > 0 && (
-                      <p className="text-[10px] text-gray-500">[{item.customizations.join(', ')}]</p>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {printingOrder.special_instructions && (
-              <div className="border-b border-dashed border-gray-300 pb-2">
-                <p className="font-bold text-gray-900">NOTES:</p>
-                <p className="text-gray-700 italic">{printingOrder.special_instructions}</p>
-              </div>
-            )}
-
-            <div className="text-center pt-2">
-              <p className="font-bold uppercase text-gray-900">
-                Payment: {printingOrder.payment_method === 'paystack' ? 'PAID ONLINE (PAYSTACK)' : 'CASH ON DELIVERY'}
-              </p>
-              <p className="text-[10px] text-gray-500 mt-2">Thank you for dining with Snad Kitchen!</p>
-            </div>
-
-            <div className="flex gap-2 pt-3 print:hidden">
-              <button
-                onClick={() => setPrintingOrder(null)}
-                className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold py-2 rounded-xl text-xs transition"
-              >
-                Close
-              </button>
-              <button
-                onClick={() => window.print()}
-                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print Ticket</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Thermal POS Receipt / Kitchen Ticket Modal */}
+      <ThermalReceiptModal
+        order={printingOrder}
+        isOpen={!!printingOrder}
+        onClose={() => setPrintingOrder(null)}
+        initialMode="kitchen"
+      />
     </div>
   );
 }

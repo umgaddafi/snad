@@ -55,3 +55,29 @@ export const playFemaleVoiceNotification = (text: string) => {
     console.error('Audio notification play failed:', e);
   }
 };
+
+export const playPosChime = () => {
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const playTone = (freq: number, start: number, duration: number) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
+      gain.gain.setValueAtTime(0.25, ctx.currentTime + start);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + start);
+      osc.stop(ctx.currentTime + start + duration);
+    };
+    playTone(523.25, 0, 0.12); // C5
+    playTone(659.25, 0.08, 0.12); // E5
+    playTone(783.99, 0.16, 0.3); // G5
+  } catch (e) {
+    // Ignore audio context autoplay limitations
+  }
+};
+

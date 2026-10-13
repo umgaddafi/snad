@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, ShoppingBag, Users, UtensilsCrossed, Settings, LogOut, Bell, Menu, X, Tag, Star, TrendingUp, MapPin, Loader2, MessageSquare, Clock, User, ChevronDown, Search, CheckCheck } from 'lucide-react';
+import { LayoutDashboard, ShoppingBag, Users, UtensilsCrossed, Settings, LogOut, Bell, Menu, X, Tag, Star, TrendingUp, MapPin, Loader2, MessageSquare, Clock, User, ChevronDown, Search, CheckCheck, Sparkles } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '@/store/useAuthStore';
 import api from '@/lib/axios';
@@ -105,12 +105,14 @@ export default function DashboardLayout() {
 
   const userRole = user.role || 'customer';
   const isAdmin = userRole === 'admin' || location.pathname.startsWith('/admin');
+  const isFrontDesk = userRole === 'front_desk' || location.pathname.startsWith('/front-desk');
   const isKitchen = userRole === 'kitchen' || location.pathname.startsWith('/kitchen');
   const isRider = userRole === 'rider' || location.pathname.startsWith('/rider');
 
   const navItems = isAdmin ? [
     { name: 'Overview', path: '/admin', icon: LayoutDashboard },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
+    { name: 'Front Desk POS', path: '/front-desk', icon: UtensilsCrossed },
     { name: 'Menu & Inventory', path: '/admin/menu', icon: UtensilsCrossed },
     { name: 'Categories', path: '/admin/categories', icon: UtensilsCrossed },
     { name: 'Delivery Locations', path: '/admin/locations', icon: MapPin },
@@ -118,7 +120,13 @@ export default function DashboardLayout() {
     { name: 'Customer Reviews', path: '/admin/reviews', icon: Star },
     { name: 'Customers', path: '/admin/customers', icon: Users },
     { name: 'Snad Staff', path: '/admin/staff', icon: Users },
+    { name: 'Landing Page CMS', path: '/admin/landing-page', icon: Sparkles },
     { name: 'Settings', path: '/admin/settings', icon: Settings },
+  ] : isFrontDesk ? [
+    { name: 'POS Order Terminal', path: '/front-desk', icon: UtensilsCrossed },
+    { name: 'Front Desk Orders', path: '/front-desk/orders', icon: ShoppingBag },
+    { name: 'Kitchen Live Queue', path: '/kitchen', icon: LayoutDashboard },
+    { name: 'My Profile', path: '/dashboard/profile', icon: User },
   ] : isKitchen ? [
     { name: 'Live Queue', path: '/kitchen', icon: LayoutDashboard },
     { name: 'Inventory Alerts', path: '/kitchen/inventory', icon: UtensilsCrossed },
@@ -380,7 +388,7 @@ export default function DashboardLayout() {
                 <div className="hidden sm:block text-left">
                   <p className="text-sm font-bold text-gray-900 leading-tight">{user.name}</p>
                   <p className="text-[11px] text-gray-500 capitalize leading-tight">
-                    {isRider ? 'Delivery Rider' : isKitchen ? 'Kitchen Staff' : isAdmin ? 'Administrator' : 'Customer'}
+                    {isRider ? 'Delivery Rider' : isKitchen ? 'Kitchen Staff' : isFrontDesk ? 'Front Desk Officer' : isAdmin ? 'Administrator' : 'Customer'}
                   </p>
                 </div>
                 <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform duration-200 group-hover:text-orange-500 ${showProfileMenu ? 'rotate-180 text-orange-500' : ''}`} />

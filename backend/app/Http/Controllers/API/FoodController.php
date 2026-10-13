@@ -20,7 +20,12 @@ class FoodController extends Controller
             $query->where('name', 'like', '%' . $request->search . '%');
         }
 
-        return response()->json($query->paginate(15));
+        if ($request->boolean('all')) {
+            return response()->json($query->latest()->get());
+        }
+
+        $perPage = (int)($request->per_page ?? 25);
+        return response()->json($query->paginate($perPage));
     }
 
     public function show(Food $food)

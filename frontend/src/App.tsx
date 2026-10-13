@@ -29,6 +29,7 @@ import AdminMenu from '@/pages/AdminMenu';
 import AdminCustomers from '@/pages/AdminCustomers';
 import AdminStaff from '@/pages/AdminStaff';
 import AdminSettings from '@/pages/AdminSettings';
+import AdminLandingPage from '@/pages/AdminLandingPage';
 import AdminCategories from '@/pages/AdminCategories';
 import AdminCoupons from '@/pages/AdminCoupons';
 import AdminReviews from '@/pages/AdminReviews';
@@ -38,6 +39,9 @@ import KitchenDashboard from '@/pages/KitchenDashboard';
 import KitchenInventory from '@/pages/KitchenInventory';
 
 import RiderDashboard from '@/pages/RiderDashboard';
+
+import FrontDeskPOS from '@/pages/FrontDeskPOS';
+import FrontDeskOrders from '@/pages/FrontDeskOrders';
 
 import CustomerDashboard from '@/pages/CustomerDashboard';
 import CustomerProfile from '@/pages/CustomerProfile';
@@ -98,10 +102,15 @@ function AppContent() {
         <Route path="/admin/customers" element={<AdminCustomers />} />
         <Route path="/admin/staff" element={<AdminStaff />} />
         <Route path="/admin/settings" element={<AdminSettings />} />
+        <Route path="/admin/landing-page" element={<AdminLandingPage />} />
         <Route path="/admin/categories" element={<AdminCategories />} />
         <Route path="/admin/locations" element={<AdminLocations />} />
         <Route path="/admin/coupons" element={<AdminCoupons />} />
         <Route path="/admin/reviews" element={<AdminReviews />} />
+
+        {/* Front Desk & POS */}
+        <Route path="/front-desk" element={<FrontDeskPOS />} />
+        <Route path="/front-desk/orders" element={<FrontDeskOrders />} />
 
         <Route path="/kitchen" element={<KitchenDashboard />} />
         <Route path="/kitchen/inventory" element={<KitchenInventory />} />

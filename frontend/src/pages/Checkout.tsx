@@ -115,6 +115,7 @@ export default function Checkout() {
         payment_reference: reference,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         special_instructions: finalInstructions || null,
+        order_source: 'online',
       };
 
       const response = await api.post('/orders', payload);

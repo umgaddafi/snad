@@ -13,6 +13,7 @@ export default function BottomNav() {
     if (!isAuthenticated) return '/login';
     if (user?.role === 'rider') return '/rider';
     if (user?.role === 'kitchen') return '/kitchen';
+    if (user?.role === 'front_desk') return '/front-desk';
     if (user?.role === 'admin') return '/admin';
     return '/dashboard';
   };

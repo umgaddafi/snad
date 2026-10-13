@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import api from '@/lib/axios';
 import toast from 'react-hot-toast';
+import Pagination from '@/components/common/Pagination';
 
 interface LocationItem {
   id: number;
@@ -27,6 +28,8 @@ interface LocationItem {
 export default function AdminLocations() {
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -157,6 +160,12 @@ export default function AdminLocations() {
       loc.name.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
 
+  const totalPages = Math.ceil(filteredLocations.length / ITEMS_PER_PAGE) || 1;
+  const paginatedLocations = filteredLocations.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
   return (
     <div className="space-y-6 pb-12">
       {/* Header Banner */}
@@ -188,7 +197,10 @@ export default function AdminLocations() {
             type="text"
             placeholder="Search campus location or hostel name..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              setCurrentPage(1);
+            }}
             className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-orange-500"
           />
         </div>
@@ -223,7 +235,7 @@ export default function AdminLocations() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50 text-sm">
-                {filteredLocations.map((loc) => (
+                {paginatedLocations.map((loc) => (
                   <tr key={loc.id} className="hover:bg-gray-50/80 transition">
                     <td className="py-4 px-6 font-bold text-gray-900 flex items-center space-x-3">
                       <div className="w-10 h-10 bg-orange-50 text-orange-600 rounded-xl flex items-center justify-center shrink-0">
@@ -269,6 +281,14 @@ export default function AdminLocations() {
             </table>
           </div>
         )}
+
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page)}
+          totalItems={filteredLocations.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
 
       {/* Create / Edit Modal */}

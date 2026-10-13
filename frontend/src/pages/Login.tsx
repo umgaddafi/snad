@@ -31,6 +31,7 @@ export default function Login() {
       if (res.data.user.role === 'admin') navigate('/admin');
       else if (res.data.user.role === 'kitchen') navigate('/kitchen');
       else if (res.data.user.role === 'rider') navigate('/rider');
+      else if (res.data.user.role === 'front_desk') navigate('/front-desk');
       else navigate(redirect || '/dashboard');
       
     } catch (err: any) {

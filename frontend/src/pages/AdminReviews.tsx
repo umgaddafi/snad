@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Star, MessageSquare, Trash2, Reply, Loader2 } from 'lucide-react';
 import api from '@/lib/axios';
 import toast from 'react-hot-toast';
+import Pagination from '@/components/common/Pagination';
 
 interface Review {
   id: number;
@@ -27,7 +28,12 @@ export default function AdminReviews() {
     },
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
+
   const reviews: Review[] = data?.data || [];
+  const totalPages = Math.ceil(reviews.length / ITEMS_PER_PAGE) || 1;
+  const paginatedReviews = reviews.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   const replyMutation = useMutation({
     mutationFn: async ({ id, admin_reply }: { id: number; admin_reply: string }) => {
@@ -80,7 +86,7 @@ export default function AdminReviews() {
         </div>
       ) : (
         <div className="space-y-4">
-          {reviews.map((rev) => (
+          {paginatedReviews.map((rev) => (
             <div key={rev.id} className="bg-white border border-gray-100 rounded-3xl p-6 shadow-sm space-y-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -161,6 +167,14 @@ export default function AdminReviews() {
               )}
             </div>
           ))}
+
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={(page) => setCurrentPage(page)}
+            totalItems={reviews.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
         </div>
       )}
     </div>

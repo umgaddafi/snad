@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, Edit, Trash2, Eye, X, UserPlus, Shield, ChefHat, Bike } from 'lucide-react';
+import { Loader2, Edit, Trash2, Eye, X, UserPlus, Shield, ChefHat, Bike, Receipt } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/lib/axios';
 import Pagination from '@/components/common/Pagination';
@@ -166,12 +166,14 @@ export default function AdminStaff() {
                     <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider ${
                       user.role === 'admin' ? 'bg-purple-100 text-purple-700' :
                       user.role === 'kitchen' ? 'bg-orange-100 text-orange-700' :
-                      user.role === 'rider' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'
+                      user.role === 'rider' ? 'bg-blue-100 text-blue-700' :
+                      user.role === 'front_desk' ? 'bg-teal-100 text-teal-800 border border-teal-200' : 'bg-gray-100 text-gray-700'
                     }`}>
                       {user.role === 'admin' && <Shield className="w-3 h-3" />}
                       {user.role === 'kitchen' && <ChefHat className="w-3 h-3" />}
                       {user.role === 'rider' && <Bike className="w-3 h-3" />}
-                      {user.role}
+                      {user.role === 'front_desk' && <Receipt className="w-3 h-3 text-teal-700" />}
+                      {user.role === 'front_desk' ? 'Front Desk / POS' : user.role}
                     </span>
                   </td>
                   <td className="px-6 py-4 font-medium text-gray-900">{user.orders_count || 0}</td>
@@ -283,6 +285,7 @@ export default function AdminStaff() {
                   onChange={e => setCreateForm({...createForm, role: e.target.value})}
                   className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm font-bold"
                 >
+                  <option value="front_desk">Front Desk Officer / Order Taker (Counter POS, Walk-in Orders & Receipts)</option>
                   <option value="kitchen">Kitchen Chef (Manages Cooking & Incoming Orders)</option>
                   <option value="rider">Delivery Rider (Pickups & Campus Deliveries)</option>
                   <option value="admin">Administrator (Full System Access)</option>
@@ -342,6 +345,7 @@ export default function AdminStaff() {
                       className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500"
                     >
                       <option value="customer">Customer</option>
+                      <option value="front_desk">Front Desk Officer / Order Taker</option>
                       <option value="rider">Rider</option>
                       <option value="kitchen">Kitchen</option>
                       <option value="admin">Admin</option>

@@ -57,6 +57,7 @@ Route::prefix('v1')->group(function () {
         Route::put('/users/{id}', [AuthController::class, 'update']);
         Route::delete('/users/{id}', [AuthController::class, 'destroy']);
         Route::post('/settings', [SettingController::class, 'store']);
+        Route::post('/settings/upload-image', [SettingController::class, 'uploadImage']);
         Route::post('/categories', [CategoryController::class, 'store']);
         Route::put('/categories/{category}', [CategoryController::class, 'update']);
         Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);

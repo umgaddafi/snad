@@ -36,7 +36,11 @@ class OrderController extends Controller
                            ->latest()
                            ->get();
         } else {
-            $orders = Order::with('items.food', 'user', 'delivery', 'rider')->latest()->get();
+            $query = Order::with('items.food', 'user', 'delivery', 'rider', 'address', 'payment');
+            if ($request->filled('source') && in_array($request->source, ['pos', 'online'])) {
+                $query->where('order_source', $request->source);
+            }
+            $orders = $query->latest()->get();
         }
         return response()->json($orders);
     }
@@ -47,8 +51,13 @@ class OrderController extends Controller
             'items' => 'required|array|min:1',
             'items.*.food_id' => 'required|exists:foods,id',
             'items.*.quantity' => 'required|integer|min:1',
-            'delivery_type' => 'required|in:pickup,delivery',
+            'delivery_type' => 'required|in:pickup,delivery,dine_in',
+            'order_source' => 'nullable|string|in:pos,online',
             'address_id' => 'nullable|exists:addresses,id',
+            'customer_name' => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:30',
+            'table_number' => 'nullable|string|max:50',
+            'status' => 'nullable|string|in:pending,confirmed,preparing,ready,out_for_delivery,delivered,cancelled',
         ]);
 
         try {
@@ -82,13 +91,39 @@ class OrderController extends Controller
             $tax = 0;
             $total_amount = round($taxable_subtotal + $delivery_fee, 2);
 
-            $status = ($request->payment_method === 'paystack' && !empty($request->payment_reference)) ? 'confirmed' : 'pending';
+            $currentUser = $request->user();
+            $isStaffOrder = in_array($currentUser->role ?? '', ['admin', 'front_desk']);
+
+            if ($request->filled('status')) {
+                $status = $request->status;
+            } elseif ($isStaffOrder) {
+                // Front Desk / Admin orders are automatically sent to kitchen as confirmed
+                $status = 'confirmed';
+            } elseif ($request->payment_method === 'paystack' && !empty($request->payment_reference)) {
+                $status = 'confirmed';
+            } else {
+                $status = 'pending';
+            }
+
+            $specialInstructions = $request->special_instructions;
+            if ($request->filled('table_number') && $request->delivery_type === 'dine_in') {
+                $tablePrefix = "[Table #" . trim($request->table_number) . "]";
+                if (empty($specialInstructions) || strpos($specialInstructions, $tablePrefix) === false) {
+                    $specialInstructions = trim($tablePrefix . " " . ($specialInstructions ?? ''));
+                }
+            }
+
+            $orderSource = $request->order_source ?? ($isStaffOrder ? 'pos' : 'online');
 
             $order = Order::create([
-                'user_id' => $request->user()->id,
+                'user_id' => $request->user_id ?? $currentUser->id,
+                'customer_name' => $request->customer_name ?? ($isStaffOrder ? null : $currentUser->name),
+                'customer_phone' => $request->customer_phone ?? ($isStaffOrder ? null : $currentUser->phone),
                 'order_number' => 'ORD-' . strtoupper(Str::random(8)),
                 'status' => $status,
+                'order_source' => $orderSource,
                 'delivery_type' => $request->delivery_type,
+                'table_number' => $request->table_number,
                 'subtotal' => $subtotal,
                 'discount_amount' => $discount_amount,
                 'coupon_code' => $coupon_code,
@@ -96,7 +131,7 @@ class OrderController extends Controller
                 'delivery_fee' => $delivery_fee,
                 'total_amount' => $total_amount,
                 'address_id' => $request->address_id,
-                'special_instructions' => $request->special_instructions,
+                'special_instructions' => $specialInstructions,
                 'payment_method' => $request->payment_method ?? 'cod',
                 'payment_reference' => $request->payment_reference,
             ]);

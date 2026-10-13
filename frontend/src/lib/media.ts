@@ -53,3 +53,9 @@ export function resolveMealImageUrl(imageUrl?: any): string | undefined {
 
   return imageUrl;
 }
+
+export function resolveLandingImageUrl(imageUrl?: any, fallbackUrl?: string): string {
+  const resolved = resolveMealImageUrl(imageUrl);
+  if (resolved && resolved.trim() !== '') return resolved;
+  return fallbackUrl || '';
+}

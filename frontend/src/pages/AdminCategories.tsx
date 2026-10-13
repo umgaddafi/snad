@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Edit2, Trash2, X, Loader2 } from 'lucide-react';
 import api from '@/lib/axios';
 import toast from 'react-hot-toast';
+import Pagination from '@/components/common/Pagination';
 
 interface Category {
   id: number;
@@ -17,6 +18,8 @@ export default function AdminCategories() {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [name, setName] = useState('');
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 8;
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ['adminCategories'],
@@ -25,6 +28,9 @@ export default function AdminCategories() {
       return res.data as Category[];
     }
   });
+
+  const totalPages = Math.ceil((categories?.length || 0) / ITEMS_PER_PAGE) || 1;
+  const paginatedCategories = categories?.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE) || [];
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -101,7 +107,7 @@ export default function AdminCategories() {
                   </td>
                 </tr>
               )}
-              {categories?.map(cat => (
+              {paginatedCategories.map(cat => (
                 <tr key={cat.id} className="hover:bg-gray-50/50 transition">
                   <td className="px-6 py-4 text-gray-500 font-medium">#{cat.id}</td>
                   <td className="px-6 py-4 font-bold text-gray-900">{cat.name}</td>
@@ -118,6 +124,13 @@ export default function AdminCategories() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={(page) => setCurrentPage(page)}
+          totalItems={categories?.length || 0}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
 
       {/* Add/Edit Modal */}

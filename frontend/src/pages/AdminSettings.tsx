@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Save, Loader2, Wrench, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Save, Loader2, Wrench, AlertTriangle, Sparkles, ArrowRight, FileText } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import api from '@/lib/axios';
@@ -114,6 +115,50 @@ export default function AdminSettings() {
       <div>
         <h2 className="text-2xl font-black text-gray-900">Platform Settings</h2>
         <p className="text-sm text-gray-500 font-medium">Configure store availability, maintenance mode, and announcements</p>
+      </div>
+
+      {/* Landing Page CMS Banner */}
+      <div className="bg-gradient-to-r from-orange-500 to-amber-500 rounded-3xl p-6 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-lg shadow-orange-200">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center shrink-0 backdrop-blur-sm">
+            <Sparkles className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-lg">Looking to customize the Homepage?</h3>
+            <p className="text-xs text-orange-100 font-medium">
+              Update hero titles, upload hero images to server disk, customize FAQs, stats, and testimonials.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/landing-page"
+          className="inline-flex items-center gap-2 bg-white text-orange-600 px-5 py-2.5 rounded-2xl font-extrabold text-xs shadow-md hover:bg-orange-50 transition self-start sm:self-auto shrink-0"
+        >
+          <span>Open Landing Page CMS</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
+      </div>
+
+      {/* Legal & Policies Card */}
+      <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0">
+            <FileText className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-extrabold text-base text-gray-900">Terms & Conditions & Privacy Policy</h3>
+            <p className="text-xs text-gray-500 font-medium">
+              Update campus ordering terms, legal disclaimers, and privacy policies displayed to users.
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/admin/landing-page?tab=legal"
+          className="inline-flex items-center gap-2 bg-gray-50 hover:bg-gray-100 text-gray-800 border border-gray-200 px-5 py-2.5 rounded-2xl font-bold text-xs transition self-start sm:self-auto shrink-0"
+        >
+          <span>Edit Legal Policies</span>
+          <ArrowRight className="w-4 h-4" />
+        </Link>
       </div>
 
       {/* Maintenance Mode Toggle Card */}

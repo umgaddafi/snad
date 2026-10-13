@@ -196,7 +196,7 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8',
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|string|in:admin,kitchen,rider',
+            'role' => 'required|string|in:admin,kitchen,rider,front_desk',
         ]);
 
         $user = User::create([
@@ -231,7 +231,7 @@ class AuthController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'phone' => 'nullable|string|max:20',
-            'role' => 'required|string|in:admin,kitchen,rider,customer',
+            'role' => 'required|string|in:admin,kitchen,rider,customer,front_desk',
         ]);
 
         $user->update([
